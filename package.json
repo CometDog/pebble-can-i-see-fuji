@@ -1,0 +1,46 @@
+{
+  "name": "can-i-see-fuji",
+  "author": "James Downs",
+  "version": "1.0.0",
+  "keywords": [
+    "pebble-app"
+  ],
+  "private": true,
+  "dependencies": {
+    "pebble-events": "^1.0.0"
+  },
+  "pebble": {
+    "displayName": "Can I See Fuji?",
+    "uuid": "30043ead-3a8c-4c5d-8fb4-4623109edf56",
+    "sdkVersion": "3",
+    "enableMultiJS": true,
+    "targetPlatforms": [
+      "aplite",
+      "basalt",
+      "diorite"
+    ],
+    "watchapp": {
+      "watchface": false
+    },
+    "messageKeys": [
+      "type",
+      "region",
+      "time",
+      "score",
+      "northMorning",
+      "northAfternoon",
+      "southMorning",
+      "southAfternoon"
+    ],
+    "resources": {
+      "media": [
+        {
+          "file": "icons/menu_icon.png",
+          "menuIcon": true,
+          "name": "IMAGE_MENU_ICON",
+          "type": "bitmap"
+        }
+      ]
+    }
+  }
+}

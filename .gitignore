@@ -1,0 +1,6 @@
+build
+.DS_STORE
+.lock-waf*
+.vscode
+src/@pebble-libraries
+node_modules
