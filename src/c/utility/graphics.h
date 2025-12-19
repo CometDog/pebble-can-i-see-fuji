@@ -38,4 +38,4 @@
 #define SCORE_CLOUD_COLOR GColorWhite
 #endif
 
-void draw_score_image(int8_t score, GContext *ctx, GPoint pos, int8_t size);
+void draw_score_image(int8_t score, GContext *ctx, GPoint pos, int16_t size);

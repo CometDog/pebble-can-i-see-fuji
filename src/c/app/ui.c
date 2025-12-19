@@ -92,10 +92,10 @@ static void morning_score_image_layer_update_proc(Layer *layer, GContext *ctx)
     GRect bounds = layer_get_bounds(layer);
     GRect bubble_rect = calculate_bubble_rect(TIME_MORNING, bounds);
 
-    graphics_context_set_stroke_width(ctx, 3);
+    graphics_context_set_stroke_width(ctx, DRAWING_STROKE);
     graphics_context_set_fill_color(ctx, TIME_MORNING_BUBBLE_COLOR);
     draw_score_image(get_current_region_score(TIME_MORNING), ctx, GPoint(PADDING * 4, bubble_rect.origin.y + PADDING),
-                     30);
+                     DRAWING_SIZE);
 }
 
 static void afternoon_score_image_layer_update_proc(Layer *layer, GContext *ctx)
@@ -103,10 +103,10 @@ static void afternoon_score_image_layer_update_proc(Layer *layer, GContext *ctx)
     GRect bounds = layer_get_bounds(layer);
     GRect bubble_rect = calculate_bubble_rect(TIME_AFTERNOON, bounds);
 
-    graphics_context_set_stroke_width(ctx, 3);
+    graphics_context_set_stroke_width(ctx, DRAWING_STROKE);
     graphics_context_set_fill_color(ctx, TIME_AFTERNOON_BUBBLE_COLOR);
     draw_score_image(get_current_region_score(TIME_AFTERNOON), ctx, GPoint(PADDING * 4, bubble_rect.origin.y + PADDING),
-                     30);
+                     DRAWING_SIZE);
 }
 
 static void main_window_load(Window *window)
@@ -125,7 +125,7 @@ static void main_window_load(Window *window)
     layer_add_child(window_layer, s_data_layer);
 
     // Date layer (top left)
-    s_date_layer = text_layer_create(GRect(PADDING, PADDING, bounds.size.w - PADDING * 2, 20));
+    s_date_layer = text_layer_create(GRect(PADDING, PADDING, bounds.size.w - PADDING * 2, REGION_BUBBLE_HEIGHT));
     text_layer_set_background_color(s_date_layer, GColorClear);
     text_layer_set_text_color(s_date_layer, DATE_TEXT_COLOR);
     text_layer_set_font(s_date_layer, fonts_get_system_font(DATE_FONT));
@@ -142,9 +142,9 @@ static void main_window_load(Window *window)
     layer_add_child(s_data_layer, text_layer_get_layer(s_region_layer));
 
     // Morning label
-    s_morning_label_layer =
-        text_layer_create(GRect(round(PADDING * 2.5), calculate_bubble_rect(TIME_MORNING, bounds).origin.y + 40,
-                                bounds.size.w / 2 - PADDING * 3, 20));
+    s_morning_label_layer = text_layer_create(
+        GRect(round(PADDING * 2.5), calculate_bubble_rect(TIME_MORNING, bounds).origin.y + (REGION_BUBBLE_HEIGHT * 2),
+              bounds.size.w / 2 - PADDING * 3, REGION_BUBBLE_HEIGHT));
     text_layer_set_background_color(s_morning_label_layer, GColorClear);
     text_layer_set_text_color(s_morning_label_layer, TIME_MORNING_TEXT_COLOR);
     text_layer_set_font(s_morning_label_layer, fonts_get_system_font(LABEL_FONT));
@@ -153,7 +153,8 @@ static void main_window_load(Window *window)
 
     // Afternoon label
     s_afternoon_label_layer = text_layer_create(
-        GRect(PADDING * 2, calculate_bubble_rect(TIME_AFTERNOON, bounds).origin.y + 40, bounds.size.w / 2, 20));
+        GRect(PADDING * 2, calculate_bubble_rect(TIME_AFTERNOON, bounds).origin.y + (REGION_BUBBLE_HEIGHT * 2),
+              bounds.size.w / 2, REGION_BUBBLE_HEIGHT));
     text_layer_set_background_color(s_afternoon_label_layer, GColorClear);
     text_layer_set_text_color(s_afternoon_label_layer, TIME_AFTERNOON_TEXT_COLOR);
     text_layer_set_font(s_afternoon_label_layer, fonts_get_system_font(LABEL_FONT));
@@ -244,10 +245,11 @@ static void loading_window_load(Window *window)
     layer_add_child(window_layer, bitmap_layer_get_layer(s_loading_bitmap_layer));
 
     // Loading text
-    s_loading_text_layer = text_layer_create(GRect(0, bounds.size.h / 2 + 50, bounds.size.w, 30));
+    s_loading_text_layer =
+        text_layer_create(GRect(0, bounds.size.h / 2 + LOADING_TEXT_Y_PADDING, bounds.size.w, LOADING_TEXT_HEIGHT));
     text_layer_set_background_color(s_loading_text_layer, GColorClear);
     text_layer_set_text_color(s_loading_text_layer, GColorBlack);
-    text_layer_set_font(s_loading_text_layer, fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD));
+    text_layer_set_font(s_loading_text_layer, fonts_get_system_font(LOADING_FONT));
     text_layer_set_text_alignment(s_loading_text_layer, GTextAlignmentCenter);
     text_layer_set_text(s_loading_text_layer, "Loading...");
     layer_add_child(window_layer, text_layer_get_layer(s_loading_text_layer));

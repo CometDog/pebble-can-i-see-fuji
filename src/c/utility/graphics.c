@@ -1,14 +1,14 @@
 #include "graphics.h"
 #include <math.h>
 
-static void draw_sun(GContext *ctx, GPoint pos, int8_t size)
+static void draw_sun(GContext *ctx, GPoint pos, int16_t size)
 {
-    const int8_t ray_length = round(size * 0.15);
-    const int8_t angle_ray_length = round(size * 0.12);
-    const int8_t sun_box_size = round(size * 0.46);
-    const int8_t gap = round((size - sun_box_size - (ray_length * 2)) / 2);
-    const int8_t center_x = pos.x + size / 2;
-    const int8_t center_y = pos.y + size / 2;
+    const int16_t ray_length = round(size * 0.15);
+    const int16_t angle_ray_length = round(size * 0.12);
+    const int16_t sun_box_size = round(size * 0.46);
+    const int16_t gap = round((size - sun_box_size - (ray_length * 2)) / 2);
+    const int16_t center_x = pos.x + size / 2;
+    const int16_t center_y = pos.y + size / 2;
 
     graphics_context_set_stroke_color(ctx, SCORE_SUN_COLOR);
 
@@ -53,10 +53,10 @@ static void draw_sun(GContext *ctx, GPoint pos, int8_t size)
     }
 }
 
-static void draw_cloud(GContext *ctx, GPoint pos, int8_t size, bool fill)
+static void draw_cloud(GContext *ctx, GPoint pos, int16_t size, bool fill)
 {
-    const int8_t center_x = pos.x + (size / 2);
-    const int8_t top_y = pos.y + 16;
+    const int16_t center_x = pos.x + (size / 2);
+    const int16_t top_y = pos.y + 16;
 
     graphics_context_set_stroke_color(ctx, SCORE_CLOUD_COLOR);
 
@@ -99,7 +99,7 @@ static void draw_cloud(GContext *ctx, GPoint pos, int8_t size, bool fill)
         // Generate path points
         for (size_t i = 0; i < sizeof(segments) / sizeof(segments[0]); i++)
         {
-            int8_t length = round(size * segments[i].scale);
+            int16_t length = round(size * segments[i].scale);
             current.x += segments[i].dx * length;
             current.y += segments[i].dy * length;
             path->points[i + 1] = current;
@@ -114,35 +114,35 @@ static void draw_cloud(GContext *ctx, GPoint pos, int8_t size, bool fill)
     GPoint current = GPoint(center_x, top_y);
     for (size_t i = 0; i < sizeof(segments) / sizeof(segments[0]); i++)
     {
-        int8_t length = round(size * segments[i].scale);
+        int16_t length = round(size * segments[i].scale);
         GPoint next = GPoint(current.x + (segments[i].dx * length), current.y + (segments[i].dy * length));
         graphics_draw_line(ctx, current, next);
         current = next;
     }
 }
 
-static void draw_partly_cloudy(GContext *ctx, GPoint pos, int8_t size)
+static void draw_partly_cloudy(GContext *ctx, GPoint pos, int16_t size)
 {
     draw_sun(ctx, pos, size);
     draw_cloud(ctx, GPoint(pos.x, pos.y + size * 0.07), size * 0.66, true);
 }
 
-static void draw_mostly_cloudy(GContext *ctx, GPoint pos, int8_t size)
+static void draw_mostly_cloudy(GContext *ctx, GPoint pos, int16_t size)
 {
     draw_sun(ctx, GPoint((size - size * 0.66) + pos.x, pos.y), size * 0.66);
     draw_cloud(ctx, GPoint(pos.x, pos.y - (size * 0.14)), size, true);
 }
 
-static void draw_very_cloudy(GContext *ctx, GPoint pos, int8_t size)
+static void draw_very_cloudy(GContext *ctx, GPoint pos, int16_t size)
 {
-    int8_t adjustment_y = -round(pos.x * 0.1);
-    int8_t adjustment_size = round(size * 0.1);
+    int16_t adjustment_y = -round(pos.x * 0.1);
+    int16_t adjustment_size = round(size * 0.1);
     draw_cloud(ctx, GPoint(pos.x + adjustment_size * 3, pos.y + adjustment_y - adjustment_size * 2),
                size - adjustment_size, true);
     draw_cloud(ctx, GPoint(pos.x, pos.y + adjustment_y), size - adjustment_size, true);
 }
 
-void draw_score_image(int8_t score, GContext *ctx, GPoint pos, int8_t size)
+void draw_score_image(int8_t score, GContext *ctx, GPoint pos, int16_t size)
 {
     if (score >= 8)
         draw_sun(ctx, pos, size);
