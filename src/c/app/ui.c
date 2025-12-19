@@ -22,18 +22,32 @@ static Layer *s_data_layer;
 
 static GRect calculate_bubble_rect(TimePeriod time, GRect bounds)
 {
+#ifdef PBL_ROUND
+    const int16_t inset = PLATFORM_SCALE(22);
+    const int16_t bubble_height = PLATFORM_SCALE(57);
+    const int16_t base_y = PADDING * 2 + REGION_BUBBLE_HEIGHT;
+    const int16_t y = (time == TIME_MORNING) ? base_y : base_y + bubble_height + PADDING;
+    return GRect(inset, y, bounds.size.w - inset * 2, bubble_height);
+#else
     const int16_t base_y = PADDING * 2 + REGION_BUBBLE_HEIGHT;
     const int16_t y = (time == TIME_MORNING) ? base_y : base_y + TIME_BUBBLE_HEIGHT + PADDING;
     return GRect(PADDING, y, bounds.size.w - PADDING * 2, TIME_BUBBLE_HEIGHT);
+#endif
 }
 
 static GRect calculate_score_rect(TimePeriod time, GRect bounds, int8_t line_count)
 {
     GRect bubble = calculate_bubble_rect(time, bounds);
     int8_t single_line_padding_y = line_count == 1 ? PADDING : 0;
+    int16_t inset = PADDING * 2;
+    int16_t bubble_height = TIME_BUBBLE_HEIGHT;
+#ifdef PBL_ROUND
+    inset = PLATFORM_SCALE(22) + PADDING;
+    bubble_height = PLATFORM_SCALE(57);
+#endif
     return GRect(bounds.size.w / 2 + PADDING,
-                 bubble.origin.y + ((TIME_BUBBLE_HEIGHT / 2) - (SCORE_BUBBLE_HEIGHT / 2)) + single_line_padding_y,
-                 bounds.size.w / 2 - PADDING * 2 - 10, SCORE_BUBBLE_HEIGHT - (single_line_padding_y * 2));
+                 bubble.origin.y + ((bubble_height / 2) - (SCORE_BUBBLE_HEIGHT / 2)) + single_line_padding_y,
+                 bounds.size.w / 2 - inset - 10, SCORE_BUBBLE_HEIGHT - (single_line_padding_y * 2));
 }
 
 static void update_date()
@@ -70,11 +84,14 @@ static void canvas_update_proc(Layer *layer, GContext *ctx)
     graphics_context_set_fill_color(ctx, BACKGROUND_BUBBLE_COLOR);
     graphics_fill_rect(ctx, bounds, CORNER_RADIUS_MAIN, GCornersAll);
 
-    // Region bubble
+    int16_t region_inset = bounds.size.w - PADDING - REGION_BUBBLE_WIDTH;
+#ifdef PBL_ROUND
+    region_inset = (bounds.size.w - REGION_BUBBLE_WIDTH) / 2;
+#endif
+    // Region bubble at top right for rectangular displays
     graphics_context_set_fill_color(ctx, REGION_BUBBLE_COLOR);
-    graphics_fill_rect(
-        ctx, GRect(bounds.size.w - PADDING - REGION_BUBBLE_WIDTH, PADDING, REGION_BUBBLE_WIDTH, REGION_BUBBLE_HEIGHT),
-        CORNER_RADIUS_BUBBLE, GCornersAll);
+    graphics_fill_rect(ctx, GRect(region_inset, PADDING, REGION_BUBBLE_WIDTH, REGION_BUBBLE_HEIGHT),
+                       CORNER_RADIUS_BUBBLE, GCornersAll);
 
     // Morning/Afternoon sections
     graphics_context_set_fill_color(ctx, TIME_MORNING_BUBBLE_COLOR);
@@ -94,8 +111,14 @@ static void morning_score_image_layer_update_proc(Layer *layer, GContext *ctx)
 
     graphics_context_set_stroke_width(ctx, DRAWING_STROKE);
     graphics_context_set_fill_color(ctx, TIME_MORNING_BUBBLE_COLOR);
-    draw_score_image(get_current_region_score(TIME_MORNING), ctx, GPoint(PADDING * 4, bubble_rect.origin.y + PADDING),
-                     DRAWING_SIZE);
+#ifdef PBL_ROUND
+    const int16_t icon_size = PLATFORM_SCALE(24);
+    draw_score_image(get_current_region_score(TIME_MORNING), ctx,
+                     GPoint(bubble_rect.origin.x + PLATFORM_SCALE(15), bubble_rect.origin.y + PADDING), icon_size);
+#else
+    draw_score_image(get_current_region_score(TIME_MORNING), ctx,
+                     GPoint(PLATFORM_SCALE(24), bubble_rect.origin.y + PADDING), DRAWING_SIZE);
+#endif
 }
 
 static void afternoon_score_image_layer_update_proc(Layer *layer, GContext *ctx)
@@ -105,8 +128,14 @@ static void afternoon_score_image_layer_update_proc(Layer *layer, GContext *ctx)
 
     graphics_context_set_stroke_width(ctx, DRAWING_STROKE);
     graphics_context_set_fill_color(ctx, TIME_AFTERNOON_BUBBLE_COLOR);
-    draw_score_image(get_current_region_score(TIME_AFTERNOON), ctx, GPoint(PADDING * 4, bubble_rect.origin.y + PADDING),
-                     DRAWING_SIZE);
+#ifdef PBL_ROUND
+    const int16_t icon_size = PLATFORM_SCALE(24);
+    draw_score_image(get_current_region_score(TIME_AFTERNOON), ctx,
+                     GPoint(bubble_rect.origin.x + PLATFORM_SCALE(15), bubble_rect.origin.y + PADDING), icon_size);
+#else
+    draw_score_image(get_current_region_score(TIME_AFTERNOON), ctx,
+                     GPoint(PLATFORM_SCALE(24), bubble_rect.origin.y + PADDING), DRAWING_SIZE);
+#endif
 }
 
 static void main_window_load(Window *window)
@@ -124,17 +153,30 @@ static void main_window_load(Window *window)
     s_data_layer = layer_create(bounds);
     layer_add_child(window_layer, s_data_layer);
 
-    // Date layer (top left)
+#ifdef PBL_ROUND
+    // Date layer at bottom center for round displays
+    s_date_layer = text_layer_create(GRect(PADDING, bounds.size.h - REGION_BUBBLE_HEIGHT - PADDING,
+                                           bounds.size.w - PADDING * 2, REGION_BUBBLE_HEIGHT));
+    text_layer_set_text_alignment(s_date_layer, GTextAlignmentCenter);
+
+    // Region layer at top center for round displays
+    int16_t region_x = (bounds.size.w - REGION_BUBBLE_WIDTH) / 2;
+    s_region_layer = text_layer_create(GRect(region_x + 4, PADDING, REGION_BUBBLE_WIDTH - 8, REGION_BUBBLE_HEIGHT));
+#else
+    // Date layer (top left) for rectangular displays
     s_date_layer = text_layer_create(GRect(PADDING, PADDING, bounds.size.w - PADDING * 2, REGION_BUBBLE_HEIGHT));
+    text_layer_set_text_alignment(s_date_layer, GTextAlignmentLeft);
+
+    // Region layer (top right bubble) for rectangular displays
+    s_region_layer = text_layer_create(GRect(bounds.size.w - PADDING - REGION_BUBBLE_WIDTH + 4, PADDING,
+                                             REGION_BUBBLE_WIDTH - 8, REGION_BUBBLE_HEIGHT));
+#endif
+
     text_layer_set_background_color(s_date_layer, GColorClear);
     text_layer_set_text_color(s_date_layer, DATE_TEXT_COLOR);
     text_layer_set_font(s_date_layer, fonts_get_system_font(DATE_FONT));
-    text_layer_set_text_alignment(s_date_layer, GTextAlignmentLeft);
     layer_add_child(s_data_layer, text_layer_get_layer(s_date_layer));
 
-    // Region layer (top right bubble)
-    s_region_layer = text_layer_create(GRect(bounds.size.w - PADDING - REGION_BUBBLE_WIDTH + 4, PADDING,
-                                             REGION_BUBBLE_WIDTH - 8, REGION_BUBBLE_HEIGHT));
     text_layer_set_background_color(s_region_layer, GColorClear);
     text_layer_set_text_color(s_region_layer, REGION_TEXT_COLOR);
     text_layer_set_font(s_region_layer, fonts_get_system_font(LABEL_FONT));
@@ -142,9 +184,16 @@ static void main_window_load(Window *window)
     layer_add_child(s_data_layer, text_layer_get_layer(s_region_layer));
 
     // Morning label
+#ifdef PBL_ROUND
+    GRect morning_bubble = calculate_bubble_rect(TIME_MORNING, bounds);
+    s_morning_label_layer =
+        text_layer_create(GRect(morning_bubble.origin.x + PADDING, morning_bubble.origin.y + PLATFORM_SCALE(36),
+                                bounds.size.w / 2 - PADDING * 3, REGION_BUBBLE_HEIGHT));
+#else
     s_morning_label_layer = text_layer_create(
         GRect(round(PADDING * 2.5), calculate_bubble_rect(TIME_MORNING, bounds).origin.y + (REGION_BUBBLE_HEIGHT * 2),
               bounds.size.w / 2 - PADDING * 3, REGION_BUBBLE_HEIGHT));
+#endif
     text_layer_set_background_color(s_morning_label_layer, GColorClear);
     text_layer_set_text_color(s_morning_label_layer, TIME_MORNING_TEXT_COLOR);
     text_layer_set_font(s_morning_label_layer, fonts_get_system_font(LABEL_FONT));
@@ -152,9 +201,16 @@ static void main_window_load(Window *window)
     layer_add_child(s_data_layer, text_layer_get_layer(s_morning_label_layer));
 
     // Afternoon label
+#ifdef PBL_ROUND
+    GRect afternoon_bubble = calculate_bubble_rect(TIME_AFTERNOON, bounds);
+    s_afternoon_label_layer =
+        text_layer_create(GRect(afternoon_bubble.origin.x + PADDING, afternoon_bubble.origin.y + PLATFORM_SCALE(36),
+                                bounds.size.w / 2, REGION_BUBBLE_HEIGHT));
+#else
     s_afternoon_label_layer = text_layer_create(
         GRect(PADDING * 2, calculate_bubble_rect(TIME_AFTERNOON, bounds).origin.y + (REGION_BUBBLE_HEIGHT * 2),
               bounds.size.w / 2, REGION_BUBBLE_HEIGHT));
+#endif
     text_layer_set_background_color(s_afternoon_label_layer, GColorClear);
     text_layer_set_text_color(s_afternoon_label_layer, TIME_AFTERNOON_TEXT_COLOR);
     text_layer_set_font(s_afternoon_label_layer, fonts_get_system_font(LABEL_FONT));
