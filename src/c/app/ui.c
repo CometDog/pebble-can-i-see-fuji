@@ -1,9 +1,13 @@
 #include "ui.h"
-#include "data.h"
-#include "../utility/utility.h"
 #include "../utility/graphics.h"
-#include "math.h"
+#include "../utility/utility.h"
+#include "data.h"
+#include <math.h>
 
+static Window *s_loading_window;
+static BitmapLayer *s_loading_bitmap_layer;
+static GBitmap *s_loading_bitmap;
+static TextLayer *s_loading_text_layer;
 static Window *s_main_window;
 static TextLayer *s_date_layer;
 static TextLayer *s_region_layer;
@@ -29,8 +33,7 @@ static GRect calculate_score_rect(TimePeriod time, GRect bounds, int8_t line_cou
     int8_t single_line_padding_y = line_count == 1 ? PADDING : 0;
     return GRect(bounds.size.w / 2 + PADDING,
                  bubble.origin.y + ((TIME_BUBBLE_HEIGHT / 2) - (SCORE_BUBBLE_HEIGHT / 2)) + single_line_padding_y,
-                 bounds.size.w / 2 - PADDING * 2 - 10,
-                 SCORE_BUBBLE_HEIGHT - (single_line_padding_y * 2));
+                 bounds.size.w / 2 - PADDING * 2 - 10, SCORE_BUBBLE_HEIGHT - (single_line_padding_y * 2));
 }
 
 static void update_date()
@@ -44,8 +47,7 @@ static void update_date()
 
 static void update_region()
 {
-    text_layer_set_text(s_region_layer,
-                        get_current_region() == REGION_NORTH ? "North" : "South");
+    text_layer_set_text(s_region_layer, get_current_region() == REGION_NORTH ? "North" : "South");
 }
 
 static void region_toggle_click_handler(ClickRecognizerRef recognizer, void *context)
@@ -70,20 +72,15 @@ static void canvas_update_proc(Layer *layer, GContext *ctx)
 
     // Region bubble
     graphics_context_set_fill_color(ctx, REGION_BUBBLE_COLOR);
-    graphics_fill_rect(ctx,
-                       GRect(bounds.size.w - PADDING - REGION_BUBBLE_WIDTH,
-                             PADDING,
-                             REGION_BUBBLE_WIDTH,
-                             REGION_BUBBLE_HEIGHT),
-                       CORNER_RADIUS_BUBBLE, GCornersAll);
+    graphics_fill_rect(
+        ctx, GRect(bounds.size.w - PADDING - REGION_BUBBLE_WIDTH, PADDING, REGION_BUBBLE_WIDTH, REGION_BUBBLE_HEIGHT),
+        CORNER_RADIUS_BUBBLE, GCornersAll);
 
     // Morning/Afternoon sections
     graphics_context_set_fill_color(ctx, TIME_MORNING_BUBBLE_COLOR);
-    graphics_fill_rect(ctx, calculate_bubble_rect(TIME_MORNING, bounds),
-                       CORNER_RADIUS_MAIN, GCornersAll);
+    graphics_fill_rect(ctx, calculate_bubble_rect(TIME_MORNING, bounds), CORNER_RADIUS_MAIN, GCornersAll);
     graphics_context_set_fill_color(ctx, TIME_AFTERNOON_BUBBLE_COLOR);
-    graphics_fill_rect(ctx, calculate_bubble_rect(TIME_AFTERNOON, bounds),
-                       CORNER_RADIUS_MAIN, GCornersAll);
+    graphics_fill_rect(ctx, calculate_bubble_rect(TIME_AFTERNOON, bounds), CORNER_RADIUS_MAIN, GCornersAll);
 
     // Score indicators
     draw_score_bubble(ctx, layer, TIME_MORNING);
@@ -97,8 +94,7 @@ static void morning_score_image_layer_update_proc(Layer *layer, GContext *ctx)
 
     graphics_context_set_stroke_width(ctx, 3);
     graphics_context_set_fill_color(ctx, TIME_MORNING_BUBBLE_COLOR);
-    draw_score_image(get_current_region_score(TIME_MORNING), ctx,
-                     GPoint(PADDING * 4, bubble_rect.origin.y + PADDING),
+    draw_score_image(get_current_region_score(TIME_MORNING), ctx, GPoint(PADDING * 4, bubble_rect.origin.y + PADDING),
                      30);
 }
 
@@ -109,8 +105,7 @@ static void afternoon_score_image_layer_update_proc(Layer *layer, GContext *ctx)
 
     graphics_context_set_stroke_width(ctx, 3);
     graphics_context_set_fill_color(ctx, TIME_AFTERNOON_BUBBLE_COLOR);
-    draw_score_image(get_current_region_score(TIME_AFTERNOON), ctx,
-                     GPoint(PADDING * 4, bubble_rect.origin.y + PADDING),
+    draw_score_image(get_current_region_score(TIME_AFTERNOON), ctx, GPoint(PADDING * 4, bubble_rect.origin.y + PADDING),
                      30);
 }
 
@@ -130,8 +125,7 @@ static void main_window_load(Window *window)
     layer_add_child(window_layer, s_data_layer);
 
     // Date layer (top left)
-    s_date_layer = text_layer_create(GRect(PADDING, PADDING,
-                                           bounds.size.w - PADDING * 2, 20));
+    s_date_layer = text_layer_create(GRect(PADDING, PADDING, bounds.size.w - PADDING * 2, 20));
     text_layer_set_background_color(s_date_layer, GColorClear);
     text_layer_set_text_color(s_date_layer, DATE_TEXT_COLOR);
     text_layer_set_font(s_date_layer, fonts_get_system_font(DATE_FONT));
@@ -139,11 +133,8 @@ static void main_window_load(Window *window)
     layer_add_child(s_data_layer, text_layer_get_layer(s_date_layer));
 
     // Region layer (top right bubble)
-    s_region_layer = text_layer_create(
-        GRect(bounds.size.w - PADDING - REGION_BUBBLE_WIDTH + 4,
-              PADDING,
-              REGION_BUBBLE_WIDTH - 8,
-              REGION_BUBBLE_HEIGHT));
+    s_region_layer = text_layer_create(GRect(bounds.size.w - PADDING - REGION_BUBBLE_WIDTH + 4, PADDING,
+                                             REGION_BUBBLE_WIDTH - 8, REGION_BUBBLE_HEIGHT));
     text_layer_set_background_color(s_region_layer, GColorClear);
     text_layer_set_text_color(s_region_layer, REGION_TEXT_COLOR);
     text_layer_set_font(s_region_layer, fonts_get_system_font(LABEL_FONT));
@@ -151,11 +142,9 @@ static void main_window_load(Window *window)
     layer_add_child(s_data_layer, text_layer_get_layer(s_region_layer));
 
     // Morning label
-    s_morning_label_layer = text_layer_create(
-        GRect(round(PADDING * 2.5),
-              calculate_bubble_rect(TIME_MORNING, bounds).origin.y + 40,
-              bounds.size.w / 2 - PADDING * 3,
-              20));
+    s_morning_label_layer =
+        text_layer_create(GRect(round(PADDING * 2.5), calculate_bubble_rect(TIME_MORNING, bounds).origin.y + 40,
+                                bounds.size.w / 2 - PADDING * 3, 20));
     text_layer_set_background_color(s_morning_label_layer, GColorClear);
     text_layer_set_text_color(s_morning_label_layer, TIME_MORNING_TEXT_COLOR);
     text_layer_set_font(s_morning_label_layer, fonts_get_system_font(LABEL_FONT));
@@ -164,10 +153,7 @@ static void main_window_load(Window *window)
 
     // Afternoon label
     s_afternoon_label_layer = text_layer_create(
-        GRect(PADDING * 2,
-              calculate_bubble_rect(TIME_AFTERNOON, bounds).origin.y + 40,
-              bounds.size.w / 2,
-              20));
+        GRect(PADDING * 2, calculate_bubble_rect(TIME_AFTERNOON, bounds).origin.y + 40, bounds.size.w / 2, 20));
     text_layer_set_background_color(s_afternoon_label_layer, GColorClear);
     text_layer_set_text_color(s_afternoon_label_layer, TIME_AFTERNOON_TEXT_COLOR);
     text_layer_set_font(s_afternoon_label_layer, fonts_get_system_font(LABEL_FONT));
@@ -221,8 +207,7 @@ void draw_score_bubble(GContext *ctx, Layer *layer, TimePeriod time)
     GRect bounds = layer_get_bounds(layer);
     int8_t line_count = score >= 8 ? 1 : 2;
     graphics_context_set_fill_color(ctx, get_score_bubble_color(score));
-    graphics_fill_rect(ctx, calculate_score_rect(time, bounds, line_count),
-                       CORNER_RADIUS_BUBBLE, GCornersAll);
+    graphics_fill_rect(ctx, calculate_score_rect(time, bounds, line_count), CORNER_RADIUS_BUBBLE, GCornersAll);
 }
 
 void update_score(TimePeriod time)
@@ -244,19 +229,88 @@ void update_all(void)
     update_score(TIME_AFTERNOON);
 }
 
+static void loading_window_load(Window *window)
+{
+    Layer *window_layer = window_get_root_layer(window);
+    GRect bounds = layer_get_bounds(window_layer);
+
+    // Fuji image
+    s_loading_bitmap = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_FUJI_80);
+    s_loading_bitmap_layer = bitmap_layer_create(bounds);
+    bitmap_layer_set_bitmap(s_loading_bitmap_layer, s_loading_bitmap);
+    bitmap_layer_set_alignment(s_loading_bitmap_layer, GAlignCenter);
+    bitmap_layer_set_background_color(s_loading_bitmap_layer, GColorWhite);
+    bitmap_layer_set_compositing_mode(s_loading_bitmap_layer, GCompOpSet);
+    layer_add_child(window_layer, bitmap_layer_get_layer(s_loading_bitmap_layer));
+
+    // Loading text
+    s_loading_text_layer = text_layer_create(GRect(0, bounds.size.h / 2 + 50, bounds.size.w, 30));
+    text_layer_set_background_color(s_loading_text_layer, GColorClear);
+    text_layer_set_text_color(s_loading_text_layer, GColorBlack);
+    text_layer_set_font(s_loading_text_layer, fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD));
+    text_layer_set_text_alignment(s_loading_text_layer, GTextAlignmentCenter);
+    text_layer_set_text(s_loading_text_layer, "Loading...");
+    layer_add_child(window_layer, text_layer_get_layer(s_loading_text_layer));
+}
+
+static void loading_window_unload(Window *window)
+{
+    text_layer_destroy(s_loading_text_layer);
+    bitmap_layer_destroy(s_loading_bitmap_layer);
+    gbitmap_destroy(s_loading_bitmap);
+}
+
+void show_main_window(void)
+{
+    if (!s_main_window)
+    {
+        s_main_window = window_create();
+        window_set_window_handlers(s_main_window, (WindowHandlers){
+                                                      .load = main_window_load,
+                                                      .unload = main_window_unload,
+                                                  });
+        window_set_click_config_provider(s_main_window, click_config_provider);
+    }
+
+    window_stack_remove(s_loading_window, false);
+    window_stack_push(s_main_window, true);
+
+    window_destroy(s_loading_window);
+    s_loading_window = NULL;
+}
+
 void ui_init(void)
 {
-    s_main_window = window_create();
-    window_set_window_handlers(s_main_window, (WindowHandlers){
-                                                  .load = main_window_load,
-                                                  .unload = main_window_unload,
-                                              });
-    window_set_click_config_provider(s_main_window, click_config_provider);
-    window_stack_push(s_main_window, true);
-    update_all();
+    if (get_data_loaded_progress() == 4)
+    {
+        s_main_window = window_create();
+        window_set_window_handlers(s_main_window, (WindowHandlers){
+                                                      .load = main_window_load,
+                                                      .unload = main_window_unload,
+                                                  });
+        window_set_click_config_provider(s_main_window, click_config_provider);
+        window_stack_push(s_main_window, true);
+        update_all();
+    }
+    else
+    {
+        s_loading_window = window_create();
+        window_set_window_handlers(s_loading_window, (WindowHandlers){
+                                                         .load = loading_window_load,
+                                                         .unload = loading_window_unload,
+                                                     });
+        window_stack_push(s_loading_window, true);
+    }
 }
 
 void ui_deinit(void)
 {
-    window_destroy(s_main_window);
+    if (s_loading_window)
+    {
+        window_destroy(s_loading_window);
+    }
+    if (s_main_window)
+    {
+        window_destroy(s_main_window);
+    }
 }

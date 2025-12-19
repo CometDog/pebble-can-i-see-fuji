@@ -1,7 +1,7 @@
 #pragma once
 
-#include <pebble.h>
 #include "data.h"
+#include <pebble.h>
 
 #define PADDING 6
 #define CORNER_RADIUS_MAIN 14
@@ -19,3 +19,4 @@ void ui_deinit(void);
 void update_all(void);
 void update_score(TimePeriod time);
 void draw_score_bubble(GContext *ctx, Layer *layer, TimePeriod time);
+void show_main_window(void);

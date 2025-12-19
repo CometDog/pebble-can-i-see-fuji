@@ -41,6 +41,20 @@ void set_current_region(Region region)
     s_current_region = region;
 }
 
+int get_data_loaded_progress(void)
+{
+    int progress = 0;
+    if (s_region_scores[REGION_NORTH].morning != -1)
+        progress++;
+    if (s_region_scores[REGION_NORTH].afternoon != -1)
+        progress++;
+    if (s_region_scores[REGION_SOUTH].morning != -1)
+        progress++;
+    if (s_region_scores[REGION_SOUTH].afternoon != -1)
+        progress++;
+    return progress;
+}
+
 void data_init(void)
 {
 }

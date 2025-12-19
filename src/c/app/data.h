@@ -26,3 +26,4 @@ Region get_current_region(void);
 void set_region_score(Region region, TimePeriod time, int8_t score);
 int8_t get_current_region_score(TimePeriod time);
 void set_current_region(Region region);
+int get_data_loaded_progress(void);

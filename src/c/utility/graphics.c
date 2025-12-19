@@ -1,5 +1,5 @@
 #include "graphics.h"
-#include "math.h"
+#include <math.h>
 
 static void draw_sun(GContext *ctx, GPoint pos, int8_t size)
 {
@@ -88,9 +88,9 @@ static void draw_cloud(GContext *ctx, GPoint pos, int8_t size, bool fill)
     // Create path for filling
     if (fill)
     {
-        GPath *path = gpath_create(&(GPathInfo){
-            .num_points = sizeof(segments) / sizeof(segments[0]) + 1,
-            .points = malloc(sizeof(GPoint) * (sizeof(segments) / sizeof(segments[0]) + 1))});
+        GPath *path =
+            gpath_create(&(GPathInfo){.num_points = sizeof(segments) / sizeof(segments[0]) + 1,
+                                      .points = malloc(sizeof(GPoint) * (sizeof(segments) / sizeof(segments[0]) + 1))});
 
         // First point
         path->points[0] = GPoint(center_x, top_y);
@@ -115,9 +115,7 @@ static void draw_cloud(GContext *ctx, GPoint pos, int8_t size, bool fill)
     for (size_t i = 0; i < sizeof(segments) / sizeof(segments[0]); i++)
     {
         int8_t length = round(size * segments[i].scale);
-        GPoint next = GPoint(
-            current.x + (segments[i].dx * length),
-            current.y + (segments[i].dy * length));
+        GPoint next = GPoint(current.x + (segments[i].dx * length), current.y + (segments[i].dy * length));
         graphics_draw_line(ctx, current, next);
         current = next;
     }
@@ -139,7 +137,8 @@ static void draw_very_cloudy(GContext *ctx, GPoint pos, int8_t size)
 {
     int8_t adjustment_y = -round(pos.x * 0.1);
     int8_t adjustment_size = round(size * 0.1);
-    draw_cloud(ctx, GPoint(pos.x + adjustment_size * 3, pos.y + adjustment_y - adjustment_size * 2), size - adjustment_size, true);
+    draw_cloud(ctx, GPoint(pos.x + adjustment_size * 3, pos.y + adjustment_y - adjustment_size * 2),
+               size - adjustment_size, true);
     draw_cloud(ctx, GPoint(pos.x, pos.y + adjustment_y), size - adjustment_size, true);
 }
 

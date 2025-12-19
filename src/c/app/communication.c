@@ -46,12 +46,21 @@ static void inbox_received_callback(DictionaryIterator *iter, void *context)
 
         if (north_morning && north_afternoon && south_morning && south_afternoon)
         {
+            bool already_loaded = get_data_loaded_progress() == 4;
+
             set_region_score(REGION_NORTH, TIME_MORNING, (int8_t)north_morning->value->int32);
             set_region_score(REGION_NORTH, TIME_AFTERNOON, (int8_t)north_afternoon->value->int32);
             set_region_score(REGION_SOUTH, TIME_MORNING, (int8_t)south_morning->value->int32);
             set_region_score(REGION_SOUTH, TIME_AFTERNOON, (int8_t)south_afternoon->value->int32);
 
-            update_all();
+            if (!already_loaded && get_data_loaded_progress() == 4)
+            {
+                show_main_window();
+            }
+            else
+            {
+                update_all();
+            }
         }
     }
 }

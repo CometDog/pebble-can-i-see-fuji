@@ -39,6 +39,11 @@
           "menuIcon": true,
           "name": "IMAGE_MENU_ICON",
           "type": "bitmap"
+        },
+        {
+          "file": "icons/fuji_80x80.png",
+          "name": "IMAGE_FUJI_80",
+          "type": "bitmap"
         }
       ]
     }
