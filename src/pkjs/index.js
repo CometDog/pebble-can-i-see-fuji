@@ -61,8 +61,8 @@ const regionScores = {
  */
 function getUrl({ lat, long, time }) {
     const now = new Date()
-    now.setHours(now.getHours() + 9)
-    const today = now.toISOString().split('T')[0]
+    const jstTime = new Date(now.getTime() + (9 * 60 * 60 * 1000))
+    const today = jstTime.toISOString().split('T')[0]
     const hourRange = time === 'morning'
         ? { start: `${today}T06:00`, end: `${today}T11:00` }
         : { start: `${today}T12:00`, end: `${today}T17:00` }

@@ -53,7 +53,7 @@ static GRect calculate_score_rect(TimePeriod time, GRect bounds, int8_t line_cou
 static void update_date()
 {
     time_t now = time(NULL) + (9 * 3600);
-    struct tm *tick_time = localtime(&now);
+    struct tm *tick_time = gmtime(&now);
     static char date_buffer[16];
     strftime(date_buffer, sizeof(date_buffer), "%a %b %e", tick_time);
     text_layer_set_text(s_date_layer, date_buffer);
